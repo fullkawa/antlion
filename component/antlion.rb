@@ -4,42 +4,43 @@ require 'matrix'
 include Math
 
 class Board
-  # ボード A4横(300ppi; 1mm ≒ 11.8)
-  WIDTH = 3508
-  HEIGHT = 2480
-  
+  # ボード A4横
+  # 単位はポイント @see http://rcairo.github.io/doc/ja/cairo-svg-surface.html#label-3
+  WIDTH = 841
+  HEIGHT = 595
+
   CX = WIDTH / 2
   CY = HEIGHT / 2
-  
-  THICK = 36
+
+  THICK = 8
 end
 
 class Field
   # 中心円の半径
-  CENTER_R = 120
+  CENTER_R = 28
   # 外周の半径
-  OUTER_R = 1200
-  
-  ROUTE_WIDTH = 236
-  
+  OUTER_R = 288
+
+  ROUTE_WIDTH = 56
+
   # マス
-  SW = Board::THICK + 16
-  SH = Board::THICK + 16
-  
+  SW = Board::THICK + 4
+  SH = Board::THICK + 4
+
   CX = Board::CX
   CY = Board::CY
-  
+
   def draw_field(context)
     context.arc(0, 0, CENTER_R, 0, 2*PI)
     context.stroke
-    
+
     context.arc(0, 0, OUTER_R, 0, 2*PI)
     context.stroke
   end
-  
+
   def draw_border(context)
     # context.move_to(CX, CY)
-    0.step(-1545, -15) { |deg|
+    0.step(-1545, -1) { |deg|
       rad = deg * PI / 180
       ba = (deg.to_f / 360).abs * ROUTE_WIDTH + CENTER_R
       bx = ba * cos(rad)
@@ -48,7 +49,7 @@ class Field
     }
     context.stroke
   end
-  
+
   def draw_step(context)
     deg = -250
     @steps = Array.new
@@ -58,7 +59,7 @@ class Field
       sx = sa * cos(rad)
       sy = sa * sin(rad)
       @steps << {:x => sx, :y => sy}
-      
+
       x1, y1 = rotate( 1*SW/2,  1*SH/2, sx, sy, rad)
       context.move_to(x1, y1)
       x2, y2 = rotate(-1*SW/2,  1*SH/2, sx, sy, rad)
@@ -69,7 +70,7 @@ class Field
       context.line_to(x4, y4)
       context.close_path
       context.stroke
-      
+
       deg -= 60 / ((deg / 360).abs)
     end
   end
@@ -86,11 +87,11 @@ class Field
 end
 
 class Piers
-  M_LENGTH = 360
-  N_LENGTH = 36
+  M_LENGTH = 90
+  N_LENGTH = 9
   MN_GAP = M_LENGTH - N_LENGTH
   D_LENGTH = Field::ROUTE_WIDTH / 4
-  
+
   def initialize
     @length = Field::OUTER_R - Field::CENTER_R
     @piers = Array.new(4).map { Array.new }
@@ -101,16 +102,16 @@ class Piers
         @piers[i] << { from: s, to: e }
       end
     end
-    @piers[0][0][:move_x] = M_LENGTH + 100
-    @piers[0][0][:move_y] = -100
-    @piers[1][0][:move_x] = M_LENGTH + 100
-    @piers[1][0][:move_y] = Board::CY - 200
-    @piers[2][0][:move_x] = M_LENGTH + 100
-    @piers[2][0][:move_y] = Board::CY * 2 - 250
+    @piers[0][0][:move_x] = M_LENGTH + 24
+    @piers[0][0][:move_y] = -24
+    @piers[1][0][:move_x] = M_LENGTH + 24
+    @piers[1][0][:move_y] = Board::CY - 48
+    @piers[2][0][:move_x] = M_LENGTH + 24
+    @piers[2][0][:move_y] = Board::CY * 2 - 60
     @piers[3][0][:move_x] = 0
     @piers[3][0][:move_y] = 0
   end
-  
+
   def draw_hole(context)
     for i in 0..3
       @piers[i].each {|t|
@@ -124,7 +125,7 @@ class Piers
       context.rotate(-90 * PI / 180)
     end
   end
-  
+
   def draw_piers(context)
     for i in 0..3
       context.rotate(-180 * PI / 180)
@@ -149,7 +150,7 @@ class Piers
       context.line_to(0, @length)
       context.close_path
       context.stroke
-      
+
       context.translate(@piers[i][0][:move_x], @piers[i][0][:move_y])
     end
   end
@@ -157,21 +158,21 @@ end
 
 class Ant
   NUM = 8
-  
+
   def draw_ants(context)
-    context.translate(300, 0)
+    context.translate(72, 3)
     for i in 1..NUM
-      context.arc(100, 100, 90, PI, 2 * PI)
-      
-      context.move_to(10, 100)
-      context.line_to(100 - Board::THICK / 2, 100)
-      context.line_to(100 - Board::THICK / 2, 200)
-      context.line_to(100 + Board::THICK / 2, 200)
-      context.line_to(100 + Board::THICK / 2, 100)
-      context.line_to(190, 100)
+      context.arc(24, 24, 22, PI, 2 * PI)
+
+      context.move_to(3, 24)
+      context.line_to(24 - Board::THICK / 2, 24)
+      context.line_to(24 - Board::THICK / 2, 48)
+      context.line_to(24 + Board::THICK / 2, 48)
+      context.line_to(24 + Board::THICK / 2, 24)
+      context.line_to(46, 24)
       context.stroke
-      
-      context.translate(0, 250)
+
+      context.translate(0, 60)
     end
   end
 end
@@ -188,15 +189,15 @@ Cairo::SVGSurface.new("antlion_line.svg", Board::WIDTH, Board::HEIGHT) do |surfa
   context.translate(Field::CX, Field::CY)
   field.draw_field(context)
   field.draw_border(context)
-  
+
   context.save
   field.draw_step(context)
   context.restore
-  
+
   piers.draw_hole(context)
-  context.translate(Field::CX - 30, 0)
+  context.translate(Field::CX - 7, 0)
   piers.draw_piers(context)
-  
+
   context.restore # reset
   ant.draw_ants(context)
 end
