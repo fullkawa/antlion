@@ -87,8 +87,8 @@ class Field
 end
 
 class Piers
-  M_LENGTH = 90
-  N_LENGTH = 9
+  M_LENGTH = 80
+  N_LENGTH = 8
   MN_GAP = M_LENGTH - N_LENGTH
   D_LENGTH = Field::ROUTE_WIDTH / 4
 
@@ -154,17 +154,35 @@ class Piers
       context.translate(@piers[i][0][:move_x], @piers[i][0][:move_y])
     end
   end
+
+  def draw_stopper(context)
+    context.translate(36, 3)
+    for i in 1..8
+      context.move_to(0, 0)
+      context.line_to(16, 0)
+      context.line_to(16, 16 - Board::THICK / 2)
+      context.line_to( 8, 16 - Board::THICK / 2)
+      context.line_to( 8, 16 + Board::THICK / 2)
+      context.line_to(16, 16 + Board::THICK / 2)
+      context.line_to(16, 32)
+      context.line_to( 0, 32)
+      context.close_path
+      context.stroke
+
+      context.translate(0, 40)
+    end
+  end
 end
 
 class Ant
   NUM = 8
 
   def draw_ants(context)
-    context.translate(72, 3)
+    context.translate(36, -320)
     for i in 1..NUM
       context.arc(24, 24, 22, PI, 2 * PI)
 
-      context.move_to(3, 24)
+      context.move_to(2, 24)
       context.line_to(24 - Board::THICK / 2, 24)
       context.line_to(24 - Board::THICK / 2, 48)
       context.line_to(24 + Board::THICK / 2, 48)
@@ -199,6 +217,7 @@ Cairo::SVGSurface.new("antlion_line.svg", Board::WIDTH, Board::HEIGHT) do |surfa
   piers.draw_piers(context)
 
   context.restore # reset
+  piers.draw_stopper(context)
   ant.draw_ants(context)
 end
 
