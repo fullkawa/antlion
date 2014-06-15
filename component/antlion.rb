@@ -179,18 +179,19 @@ class Ant
 
   def draw_ants(context)
     context.translate(36, -320)
+    context.scale(1, 1.5);
     for i in 1..NUM
       context.arc(24, 24, 22, PI, 2 * PI)
 
       context.move_to(2, 24)
       context.line_to(24 - Board::THICK / 2, 24)
-      context.line_to(24 - Board::THICK / 2, 48)
-      context.line_to(24 + Board::THICK / 2, 48)
+      context.line_to(24 - Board::THICK / 2, 44)
+      context.line_to(24 + Board::THICK / 2, 44)
       context.line_to(24 + Board::THICK / 2, 24)
       context.line_to(46, 24)
       context.stroke
 
-      context.translate(0, 60)
+      context.translate(0, 48)
     end
   end
 end
